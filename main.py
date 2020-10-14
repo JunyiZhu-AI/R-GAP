@@ -1,14 +1,15 @@
 import torchvision
 import argparse
+import os
 import yaml
 from utils import *
 from models import CNN6, CNN6d, FCN3
-from recursive_attack import r_gap, peeling, fcn_reconstruction
+from recursive_attack import r_gap, peeling, fcn_reconstruction, inverse_udldu
 import matplotlib.pyplot as plt
 
 with open("config.yaml", 'r') as stream:
     config = yaml.safe_load(stream)
-parser = argparse.ArgumentParser(description="Please input model related arguments here. For more meta arguments please check CONFIG file.")
+parser = argparse.ArgumentParser(description="Model related arguments. For other configurations please check CONFIG file.")
 parser.add_argument("-d", "--dataset", help="Choose the data source.", choices=["CIFAR10", "MNIST"], default="CIFAR10")
 parser.add_argument("-i", "--index", help="Choose a specific image to reconstruct.", type=int, default=-1)
 parser.add_argument("-b", "--batchsize", default=1, help="Mini-batch size", type=int)
@@ -89,7 +90,7 @@ def main():
             elif isinstance(modules[i].act, nn.Identity):
                 da = derive_identity(x_)
             else:
-                ValueError(f'Please implement the derivative function of {modules[i-1].act}')
+                ValueError(f'Please implement the derivative function of {modules[i].act}')
 
             # back out neuron output
             if isinstance(modules[i].act, nn.LeakyReLU):
@@ -97,7 +98,7 @@ def main():
             elif isinstance(modules[i].act, nn.Identity):
                 out = inverse_identity(x_)
             else:
-                ValueError(f'Please implement the inverse function of {modules[i-1].act}')
+                ValueError(f'Please implement the inverse function of {modules[i].act}')
             if hasattr(modules[i-1].layer, 'padding'):
                 padding = modules[i-1].layer.padding[0]
             else:
@@ -119,34 +120,21 @@ def main():
     # visualization
     x_ = x_.reshape(x.shape[-3:]).squeeze()
     if args.batchsize > 1:
-        show_images(image, cols=len(image)//2+1)
+        show_images(image, path=os.path.join(config['path_to_demo'], 'origin.png'), cols=len(image)//2+1)
     else:
         plt.figure('origin')
         plt.imshow(image)
         plt.axis('off')
+        plt.savefig(os.path.join(config['path_to_demo'], 'origin.png'))
+
     plt.figure('reconstructed')
     plt.imshow(tp(torch.tensor(x_)))
+    plt.axis('off')
+    plt.savefig(os.path.join(config['path_to_demo'], 'reconstructed.png'))
     plt.figure('rescale reconstructed')
     plt.imshow(tp(torch.tensor((x_-x_.min())/x_.max())))
-    plt.show()
-
-
-def inverse_udldu(udldu):
-    '''derive u from udldu using gradient descend based method'''
-    lr = 0.01
-    u = torch.tensor(0).to(**setup).requires_grad_(True)
-    udldu = torch.tensor(udldu).to(**setup)
-    optimizer = torch.optim.Adam([u], lr=lr)
-    loss_fn = nn.MSELoss()
-    for i in range(30000):
-        optimizer.zero_grad()
-        udldu_ = -u / (1 + torch.exp(u))
-        l = loss_fn(udldu_, udldu)
-        l.backward()
-        optimizer.step()
-    udldu_ = -u / (1 + torch.exp(u))
-    print(f"The error term of inversing udldu: {udldu.item()-udldu_.item():.1e}")
-    return u.detach().numpy()
+    plt.axis('off')
+    plt.savefig(os.path.join(config['path_to_demo'], 'rescale_reconstructed.png'))
 
 
 if __name__ == "__main__":

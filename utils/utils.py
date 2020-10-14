@@ -82,7 +82,7 @@ def derive_identity(x):
     return np.ones(x.shape).reshape(1, -1).astype('float32')
 
 
-def show_images(images, cols=1, titles=None):
+def show_images(images, path, cols=1, titles=None):
     """Display a list of images in a single figure with matplotlib.
 
     Parameters
@@ -103,4 +103,6 @@ def show_images(images, cols=1, titles=None):
         a = fig.add_subplot(cols, np.ceil(n_images / float(cols)), n + 1)
         plt.gray()
         plt.imshow(image)
+        plt.axis('off')
         a.set_title(title)
+    plt.savefig(path)

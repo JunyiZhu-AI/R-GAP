@@ -1,3 +1,5 @@
 .idea/
 __pycache__
 models/parameters
+env/
+venv/

@@ -11,7 +11,7 @@ def dataloader(dataset, mode, index, batchsize, config):
     :param index: Pick up a specific image.
     :param batchsize: Size of mini-batch.
     :param config: Some meta arguments.
-    :return: Dataloader of pytorch in train mode and PIL image, as well label in attack mode.
+    :return: Dataloader of pytorch in train mode and PIL image, as well as label in attack mode.
     '''
     path = config['path_to_dataset']
     if dataset.lower() == "cifar10":

@@ -5,27 +5,27 @@ setup = {'device': 'cpu', 'dtype': torch.float32}
 
 
 def logistic_loss(y, pred):
-    # in consideration of infinite loss, PyTorch in-built logistic loss clamps its output to be greater than or equal to -100.
     y = torch.tensor(y).to(**setup)
     pred = torch.squeeze(pred, -1)
     return torch.mean(-(y*torch.log(pred)+(1-y)*torch.log(1-pred)))
 
 
-def inverse_fn(zdldz):
-    lr = 1
-    # gradient descent based method
-    z = torch.tensor(0).to(**setup).requires_grad_(True)
-    z.retain_grad()
-    zdldz = torch.tensor(zdldz).to(**setup)
+def inverse_udldu(udldu):
+    '''derive u from udldu using gradient descend based method'''
+    lr = 0.01
+    u = torch.tensor(0).to(**setup).requires_grad_(True)
+    udldu = torch.tensor(udldu).to(**setup)
+    optimizer = torch.optim.Adam([u], lr=lr)
     loss_fn = nn.MSELoss()
-    for i in range(100):
-        zdldz_ = -z / (1 + torch.exp(z))
-        l = loss_fn(zdldz_, zdldz)
-        zgrad = torch.autograd.grad(l, z)
-        z = z - lr*zgrad[0]
-    zdldz_ = -z / (1 + torch.exp(z))
-    print(f"z's error term: {zdldz-zdldz_:e}")
-    return z.detach().numpy()
+    for i in range(30000):
+        optimizer.zero_grad()
+        udldu_ = -u / (1 + torch.exp(u))
+        l = loss_fn(udldu_, udldu)
+        l.backward()
+        optimizer.step()
+    udldu_ = -u / (1 + torch.exp(u))
+    print(f"The error term of inversing udldu: {udldu.item()-udldu_.item():.1e}")
+    return u.detach().numpy()
 
 
 def peeling(in_shape, padding):
