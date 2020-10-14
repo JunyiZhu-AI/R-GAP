@@ -24,6 +24,8 @@ def main():
     train_sample, test_sample = dataloader(dataset=args.dataset, mode="attack", index=args.index,
                                            batchsize=args.batchsize, config=config)
     # set up inference framework
+    torch.manual_seed(0)
+    np.random.seed(0)
     if args.model == 'CNN6':
         net = CNN6().to(**setup).eval()
     elif args.model == 'CNN6-d':
