@@ -1,0 +1,6 @@
+path_to_dataset: ~/data
+path_to_demo: ./visualization/demo
+path_to_analysis: ./visualization
+path_to_model: ./models/parameters
+
+multithread: 0
