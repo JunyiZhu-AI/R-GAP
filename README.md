@@ -38,13 +38,5 @@ python main.py -m FCN3 -d MNIST -b 5
 
 ## Citation
 ```
-@inproceedings{
-anonymous2021rgap,
-title={R-{\{}GAP{\}}: Recursive Gradient Attack on Privacy},
-author={Anonymous},
-booktitle={Submitted to International Conference on Learning Representations},
-year={2021},
-url={https://openreview.net/forum?id=RSU17UoKfJF},
-note={under review}
-}
+
 ```
