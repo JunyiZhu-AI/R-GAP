@@ -38,5 +38,12 @@ python main.py -m FCN3 -d MNIST -b 5
 
 ## Citation
 ```
-
+@misc{zhu2020rgap,
+      title={R-GAP: Recursive Gradient Attack on Privacy}, 
+      author={Junyi Zhu and Matthew Blaschko},
+      year={2020},
+      eprint={2010.07733},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG}
+}
 ```
