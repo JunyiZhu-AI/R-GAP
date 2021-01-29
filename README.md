@@ -25,7 +25,7 @@ pip install -r requirement.txt
 ## Usage example
 > The result of reconstruction will be saved in visualization folder.
 
-* Reconsturction of the 3-th image in CIFAR10 over the CNN6 architecture:
+* Reconsturction of the 0-th image in CIFAR10 over the CNN6 architecture:
 ```
 python main.py -i 0
 ```
