@@ -2,22 +2,27 @@ import torch.nn as nn
 from collections import OrderedDict
 
 
-class FCN3(nn.Module):
+class LeNet(nn.Module):
     def __init__(self):
-        super(FCN3, self).__init__()
-        act = nn.LeakyReLU(negative_slope=0.01)
+        super(LeNet, self).__init__()
+        act = nn.Sigmoid()
+        # act = nn.LeakyReLU(negative_slope=0.2)
         self.body = nn.ModuleList([
             nn.Sequential(OrderedDict([
-                ('layer', nn.Linear(784, 1000, bias=False)),
+                ('layer', nn.Conv2d(1, 12, kernel_size=5, padding=2, stride=2, bias=False)),
                 ('act', act)
             ])),
             nn.Sequential(OrderedDict([
-                ('layer', nn.Linear(1000, 100, bias=False)),
+                ('layer', nn.Conv2d(12, 12, kernel_size=5, padding=2, stride=2, bias=False)),
                 ('act', act)
             ])),
             nn.Sequential(OrderedDict([
-                ('layer', nn.Linear(100, 1, bias=False)),
+                ('layer', nn.Conv2d(12, 12, kernel_size=5, padding=2, stride=1, bias=False)),
                 ('act', act)
+            ])),
+            nn.Sequential(OrderedDict([
+                ('layer', nn.Linear(588, 1, bias=False)),
+                ('act', nn.Identity())
             ]))
         ])
 
@@ -32,4 +37,4 @@ class FCN3(nn.Module):
 
     @staticmethod
     def name():
-        return 'FCN3'
+        return 'LeNet'

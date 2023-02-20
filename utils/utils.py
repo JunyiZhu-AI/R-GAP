@@ -100,7 +100,7 @@ def show_images(images, path, cols=1, titles=None):
     if titles is None: titles = ['Image (%d)' % i for i in range(1, n_images + 1)]
     fig = plt.figure('origin')
     for n, (image, title) in enumerate(zip(images, titles)):
-        a = fig.add_subplot(cols, np.ceil(n_images / float(cols)), n + 1)
+        a = fig.add_subplot(cols, np.ceil(n_images / float(cols)).astype(int), n + 1)
         plt.gray()
         plt.imshow(image)
         plt.axis('off')

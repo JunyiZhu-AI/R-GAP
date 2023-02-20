@@ -3,7 +3,7 @@ import argparse
 import os
 import yaml
 from utils import *
-from models import CNN6, CNN6d, FCN3
+from models import CNN6, CNN6d, FCN3, LeNet
 from recursive_attack import r_gap, peeling, fcn_reconstruction, inverse_udldu
 import matplotlib.pyplot as plt
 
@@ -14,7 +14,7 @@ parser.add_argument("-d", "--dataset", help="Choose the data source.", choices=[
 parser.add_argument("-i", "--index", help="Choose a specific image to reconstruct.", type=int, default=-1)
 parser.add_argument("-b", "--batchsize", default=1, help="Mini-batch size", type=int)
 parser.add_argument("-p", "--parameters", help="Load pre-trained model.", default=None)
-parser.add_argument("-m", "--model", help="Network architecture.", choices=["CNN6", "CNN6-d", "FCN3"], default='CNN6')
+parser.add_argument("-m", "--model", help="Network architecture.", choices=["CNN6", "CNN6-d", "FCN3", "LeNet"], default='CNN6')
 args = parser.parse_args()
 setup = {'device': 'cpu', 'dtype': torch.float32}
 print(f'Running on {setup["device"]}, PyTorch version {torch.__version__}')
@@ -30,6 +30,9 @@ def main():
         net = CNN6().to(**setup).eval()
     elif args.model == 'CNN6-d':
         net = CNN6d().to(**setup).eval()
+    elif args.model == 'LeNet':
+        net = LeNet().to(**setup)
+        net.apply(weight_init).eval()
     else:
         net = FCN3().to(**setup).eval()
     pred_loss_fn = logistic_loss
@@ -91,16 +94,20 @@ def main():
                 da = derive_leakyrelu(x_, slope=modules[i].act.negative_slope)
             elif isinstance(modules[i].act, nn.Identity):
                 da = derive_identity(x_)
+            elif isinstance(modules[i].act, nn.Sigmoid):
+                da = derive_sigmoid(x_)
             else:
-                ValueError(f'Please implement the derivative function of {modules[i].act}')
+                raise ValueError(f'Please implement the derivative function of {modules[i].act}')
 
             # back out neuron output
             if isinstance(modules[i].act, nn.LeakyReLU):
                 out = inverse_leakyrelu(x_, slope=modules[i].act.negative_slope)
             elif isinstance(modules[i].act, nn.Identity):
                 out = inverse_identity(x_)
+            elif isinstance(modules[i].act, nn.Sigmoid):
+                out = inverse_sigmoid(x_)
             else:
-                ValueError(f'Please implement the inverse function of {modules[i].act}')
+                raise ValueError(f'Please implement the inverse function of {modules[i].act}')
             if hasattr(modules[i-1].layer, 'padding'):
                 padding = modules[i-1].layer.padding[0]
             else:
@@ -125,15 +132,18 @@ def main():
         show_images(image, path=os.path.join(config['path_to_demo'], 'origin.png'), cols=len(image)//2+1)
     else:
         plt.figure('origin')
+        plt.gray()
         plt.imshow(image)
         plt.axis('off')
         plt.savefig(os.path.join(config['path_to_demo'], 'origin.png'))
 
     plt.figure('reconstructed')
+    plt.gray()
     plt.imshow(tp(torch.tensor(x_)))
     plt.axis('off')
     plt.savefig(os.path.join(config['path_to_demo'], 'reconstructed.png'))
     plt.figure('rescale reconstructed')
+    plt.gray()
     plt.imshow(tp(torch.tensor((x_-x_.min())/x_.max())))
     plt.axis('off')
     plt.savefig(os.path.join(config['path_to_demo'], 'rescale_reconstructed.png'))
